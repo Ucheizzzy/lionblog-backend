@@ -32,11 +32,20 @@ export const login = async (req, res) => {
   user.lastLogin = new Date()
   //create token
   const token = createJWT({ userId: user._id, role: user.role })
-  const oneHour = 1000 * 60 * 60 * 24
+  const oneDay = 1000 * 60 * 60 * 24
   res.cookie('token', token, {
     httpOnly: true,
-    expires: new Date(Date.now() + oneHour),
-    secure: process.env.NODE_ENV,
+    expires: new Date(Date.now() + oneDay),
+    secure: process.env.NODE_ENV === 'production',
   })
   res.status(StatusCodes.OK).json({ msg: 'User logged in successfully', user })
+}
+// @desc Logout a new user
+// @route GET /api/v1/auth/logout
+// @access public
+export const logout = async (req, res) => {
+  res
+    .clearCookie('token')
+    .status(StatusCodes.OK)
+    .json({ msg: 'user logout successful' })
 }
