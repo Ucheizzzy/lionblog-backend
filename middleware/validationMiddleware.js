@@ -42,3 +42,10 @@ export const registerInputValidation = withValidationErrors([
     .isLength({ min: 5 })
     .withMessage('Password cannot be less than 5 characters'),
 ])
+
+export const validateLoginInput = withValidationErrors([
+  body('username').notEmpty().withMessage('Username field cannot be empty'),
+  body('password')
+    .notEmpty()
+    .withMessage('Please enter the password you registered with'),
+])
