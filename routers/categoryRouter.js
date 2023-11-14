@@ -5,10 +5,17 @@ import {
   getCategories,
   updateCategory,
 } from '../controllers/categoryController.js'
+import {
+  authenticatedUser,
+  authorizePermission,
+} from '../middleware/authMiddleware.js'
 
 const router = Router()
 
-router.route('/').post(createCategory).get(getCategories)
+router
+  .route('/')
+  .post(authenticatedUser, authorizePermission('admin'), createCategory)
+  .get(getCategories)
 router.route('/:id').patch(updateCategory).delete(deleteCategory)
 
 export default router
