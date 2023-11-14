@@ -5,16 +5,20 @@ import express from 'express'
 const app = express()
 import morgan from 'morgan'
 import authRouter from './routers/authRouter.js'
+import usersRouter from './routers/userRouter.js'
 import errorHandlerMiddleware from './middleware/errorHandlerMiddleware.js'
 import mongoose, { connect } from 'mongoose'
 import cookieParser from 'cookie-parser'
+import { authenticatedUser } from './middleware/authMiddleware.js'
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'))
 }
 
 app.use(express.json())
 app.use(cookieParser())
+
 app.use('/api/v1/auth', authRouter)
+app.use('/api/v1/users', authenticatedUser, usersRouter)
 
 app.get('/', (req, res) => {
   res.send('Hello')
