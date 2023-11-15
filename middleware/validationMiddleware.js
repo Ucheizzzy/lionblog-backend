@@ -1,6 +1,8 @@
 import { body, param, validationResult } from 'express-validator'
-import { BadRequestError } from '../errors/customError.js'
+import { BadRequestError, NotFoundError } from '../errors/customError.js'
 import User from '../models/User.js'
+import Category from '../models/Category.js'
+import mongoose from 'mongoose'
 const withValidationErrors = (validationValues) => {
   return [
     validationValues,
@@ -48,4 +50,21 @@ export const validateLoginInput = withValidationErrors([
   body('password')
     .notEmpty()
     .withMessage('Please enter the password you registered with'),
+])
+export const validateCategoryInput = withValidationErrors([
+  body('name')
+    .notEmpty()
+    .withMessage('your category must have a name')
+    .custom(async (name) => {
+      const category = await Category.findOne({ name })
+      if (category) throw new BadRequestError('category already exist')
+    }),
+])
+export const validateCategoryParams = withValidationErrors([
+  param('id').custom(async (value) => {
+    const isValidMongoId = mongoose.Types.ObjectId.isValid(value)
+    if (!isValidMongoId) throw new BadRequestError('invalid mongo id')
+    const category = await Category.findById(value)
+    if (!category) throw new NotFoundError(`No category with is ${value}`)
+  }),
 ])
