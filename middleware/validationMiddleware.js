@@ -3,6 +3,7 @@ import { BadRequestError, NotFoundError } from '../errors/customError.js'
 import User from '../models/User.js'
 import Category from '../models/Category.js'
 import mongoose from 'mongoose'
+import Post from '../models/Post.js'
 const withValidationErrors = (validationValues) => {
   return [
     validationValues,
@@ -60,11 +61,33 @@ export const validateCategoryInput = withValidationErrors([
       if (category) throw new BadRequestError('category already exist')
     }),
 ])
-export const validateCategoryParams = withValidationErrors([
+
+export const validateIdParams = withValidationErrors([
   param('id').custom(async (value) => {
     const isValidMongoId = mongoose.Types.ObjectId.isValid(value)
     if (!isValidMongoId) throw new BadRequestError('invalid mongo id')
     const category = await Category.findById(value)
     if (!category) throw new NotFoundError(`No category with is ${value}`)
   }),
+])
+export const globalValidateIdParams = (Model) => {
+  return withValidationErrors([
+    param('id').custom(async (value) => {
+      const isValidMongoId = mongoose.Types.ObjectId.isValid(value)
+      if (!isValidMongoId) throw new BadRequestError('invalid mongo id')
+      const model = await Model.findById(value)
+      if (!model) throw new NotFoundError(`None found with ${value}`)
+    }),
+  ])
+}
+
+export const validatePostInputs = withValidationErrors([
+  body('title').notEmpty().withMessage('Post title cannot be empty'),
+  body('content')
+    .notEmpty()
+    .withMessage('The content of post cannot be empty')
+    .custom(async (content) => {
+      const post = await Post.findOne({ content })
+      if (post) throw new BadRequestError('Post content already exist')
+    }),
 ])

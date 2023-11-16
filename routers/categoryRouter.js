@@ -11,7 +11,7 @@ import {
 } from '../middleware/authMiddleware.js'
 import {
   validateCategoryInput,
-  validateCategoryParams,
+  validateIdParams,
 } from '../middleware/validationMiddleware.js'
 
 const router = Router()
@@ -30,14 +30,14 @@ router
   .patch(
     authenticatedUser,
     authorizePermission('admin'),
-    validateCategoryParams,
+    validateIdParams,
     validateCategoryInput,
     updateCategory
   )
   .delete(
     authenticatedUser,
     authorizePermission('admin'),
-    validateCategoryParams,
+    validateIdParams,
     deleteCategory
   )
 
