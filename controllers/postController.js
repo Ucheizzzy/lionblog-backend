@@ -34,7 +34,7 @@ export const createPost = async (req, res) => {
 // @route GET /api/v1/posts/
 // @access private
 export const getAllPost = async (req, res) => {
-  const post = await Post.find({})
+  const post = await Post.find({}).populate('comments')
   res.status(StatusCodes.OK).json({ msg: 'All post ', post })
 }
 // @desc single post

@@ -13,6 +13,7 @@ import authRouter from './routers/authRouter.js'
 import usersRouter from './routers/userRouter.js'
 import categoryRouter from './routers/categoryRouter.js'
 import postRouter from './routers/postRouter.js'
+import commentRouter from './routers/commentRouter.js'
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'))
 }
@@ -24,6 +25,7 @@ app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/users', authenticatedUser, usersRouter)
 app.use('/api/v1/categories', categoryRouter)
 app.use('/api/v1/posts', postRouter)
+app.use('/api/v1/comments', authenticatedUser, commentRouter)
 
 app.get('/', (req, res) => {
   res.send('Hello')
