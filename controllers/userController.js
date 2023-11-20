@@ -75,9 +75,7 @@ export const unBlockUser = async (req, res) => {
 export const profileViewers = async (req, res) => {
   //get the id of the user to view from params
   const { userIdProfileViewed } = req.params
-  const userProfileViewed = await User.findById(userIdProfileViewed).select(
-    'username email role _id'
-  )
+  const userProfileViewed = await User.findById(userIdProfileViewed)
   if (!userProfileViewed) throw new BadRequestError('User profile not found')
 
   // currentUser
@@ -88,7 +86,7 @@ export const profileViewers = async (req, res) => {
     throw new BadRequestError('You have viewed this profile ')
 
   userProfileViewed.profileViewers.push(currentUserId)
-
+  await userProfileViewed.save()
   res
     .status(StatusCodes.OK)
     .json({ msg: 'You have viewed this profile', userProfileViewed })
