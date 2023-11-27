@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import crypto from 'crypto'
 
 const UserSchema = new mongoose.Schema(
   {
@@ -58,5 +59,29 @@ UserSchema.methods.toJSON = function () {
   let obj = this.toObject()
   delete obj.password
   return obj
+}
+
+UserSchema.methods.generatePasswordResetToken = function () {
+  //generate the token using crypto
+  const resetToken = crypto.randomBytes(20).toString('hex')
+  //assign the token to passwordResetToken field
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex')
+
+  //update the passwordResetExpires with when to expire
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000 //10mins
+  return resetToken
+}
+
+UserSchema.methods.generateAccVerifyToken = function () {
+  const verifyToken = crypto.randomBytes(20).toString('hex')
+  this.accountVerificationToken = crypto
+    .createHash('sha256')
+    .update(verifyToken)
+    .digest('hex')
+  this.accountVerificationExpires = Date.now() + 10 * 60 * 1000
+  return verifyToken
 }
 export default mongoose.model('User', UserSchema)

@@ -23,7 +23,7 @@ export const sendEmail = async (to, resetToken) => {
         <p>Hello, you are receiving this email because you (or someone else) have requested the reset of your password.</p>
         <p>Please click on the following link, or paste this into your browser to complete the process:</p>
         <p><a href="http://localhost:3000/api/v1/reset-password/${resetToken}">Reset Password</a></p>
-        <p>If you did not request this, please ignore this email and your password will remain unchanged. Thank you.</p>
+        <p>If you did not request this, please ignore this email and your password will remain unchanged. Token expires in 10 mins. Thank you.</p>
         `,
     }
     //send the email
