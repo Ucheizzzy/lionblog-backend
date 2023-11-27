@@ -8,6 +8,8 @@ import errorHandlerMiddleware from './middleware/errorHandlerMiddleware.js'
 import mongoose, { connect } from 'mongoose'
 import cookieParser from 'cookie-parser'
 import { authenticatedUser } from './middleware/authMiddleware.js'
+
+// import { sendEmail } from './utils/sendEmail.js'
 // routers
 import authRouter from './routers/authRouter.js'
 import usersRouter from './routers/userRouter.js'
@@ -17,6 +19,8 @@ import commentRouter from './routers/commentRouter.js'
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'))
 }
+
+// sendEmail('andreanaobiakor@gmail.com', 'some message')
 
 app.use(express.json())
 app.use(cookieParser())

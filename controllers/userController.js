@@ -165,3 +165,4 @@ export const unFollowingUser = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ msg: `You have unFollowed ${userToUnFollow.username}` })
 }
+
