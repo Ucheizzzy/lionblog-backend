@@ -6,7 +6,10 @@ import {
   getSinglePost,
   updatePost,
 } from '../controllers/postController.js'
-import { authenticatedUser } from '../middleware/authMiddleware.js'
+import {
+  authenticatedUser,
+  checkAccountVerification,
+} from '../middleware/authMiddleware.js'
 import {
   globalValidateIdParams,
   validatePostInputs,
@@ -16,7 +19,12 @@ const router = Router()
 
 router
   .route('/')
-  .post(authenticatedUser, validatePostInputs, createPost)
+  .post(
+    authenticatedUser,
+    checkAccountVerification,
+    validatePostInputs,
+    createPost
+  )
   .get(getAllPost)
 router
   .route('/:id')

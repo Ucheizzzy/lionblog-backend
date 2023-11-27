@@ -50,7 +50,7 @@ const UserSchema = new mongoose.Schema(
     passwordResetToken: String,
     passwordResetExpires: Date,
     accountVerificationToken: String,
-    accountVerificationExpires: String,
+    accountVerificationExpires: Date,
   },
   { timestamps: true }
 )

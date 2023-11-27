@@ -5,6 +5,7 @@ import { BadRequestError } from '../errors/customError.js'
 import { createJWT } from '../utils/tokenUtils.js'
 import { sendEmail } from '../utils/sendEmail.js'
 import crypto from 'crypto'
+import { sendVerificationEmail } from '../utils/sendAccVerifyEmail.js'
 // @desc Register a new user
 // @route POST /api/v1/auth/register
 // @access public
@@ -115,6 +116,42 @@ export const resetPassword = async (req, res) => {
 // @access private
 export const accountVerification = async (req, res) => {
   //find the logged in user by id
-  const user = await User.findById(req.user.useId)
+  const user = await User.findById(req.user.userId)
   if (!user) throw new BadRequestError('user not found')
+  //generate the token
+  const verifyToken = await user.generateAccVerifyToken()
+  await user.save()
+  sendVerificationEmail(user?.email, verifyToken)
+
+  res
+    .status(StatusCodes.OK)
+    .json({
+      msg: `account verification email sent to ${user?.email}`,
+      verifyToken,
+    })
+}
+// @desc send account verification
+// @route patch /api/v1/auth/account-verification/:verifyToken
+// @access private
+export const verifyAccount = async (req, res) => {
+  const { verifyToken } = req.params
+  //convert the reset token to what was actually saved in the db
+  const cryptoToken = crypto
+    .createHash('sha256')
+    .update(verifyToken)
+    .digest('hex')
+  //find the user
+  const userFound = await User.findOne({
+    accountVerificationToken: cryptoToken,
+    accountVerificationExpires: { $gt: Date.now() },
+  })
+  if (!userFound)
+    throw new BadRequestError('verification token invalid or expired')
+
+  //update the user
+  userFound.isVerified = true
+  userFound.accountVerificationExpires = undefined
+  userFound.accountVerificationToken = undefined
+  await userFound.save()
+  res.status(StatusCodes.OK).json({ msg: 'your account has been verified' })
 }

@@ -20,7 +20,7 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'))
 }
 
-// sendEmail('andreanaobiakor@gmail.com', 'some message')
+// sendVerificationEmail('andreanaobiakor@gmail.com', 'some message')
 
 app.use(express.json())
 app.use(cookieParser())
