@@ -91,3 +91,77 @@ export const profileViewers = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ msg: 'You have viewed this profile', userProfileViewed })
 }
+
+// @desc following users
+// @route patch /api/v1/users/following/:userIdToFollow
+// @access private
+export const followingUser = async (req, res) => {
+  //current user
+  const currentUserId = req.user.userId
+  //user to follow
+  const { userToFollowId } = req.params
+  const userToFollow = await User.findById(userToFollowId)
+  //users cannot follow themselves
+  if (currentUserId.toString() === userToFollowId.toString()) {
+    throw new BadRequestError('you cannot follow yourself')
+  }
+
+  //push the user to follow into the current user following field
+  await User.findByIdAndUpdate(
+    currentUserId,
+    {
+      $addToSet: { following: userToFollowId },
+    },
+    {
+      new: true,
+    }
+  )
+  //push the current user into the user to follow followers table
+  await User.findByIdAndUpdate(
+    userToFollowId,
+    {
+      $addToSet: { followers: currentUserId },
+    },
+    {
+      new: true,
+    }
+  )
+
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: `You have followed ${userToFollow.username}` })
+}
+
+// @desc unFollowing users
+// @route patch /api/v1/users/unFollowing/:userToUnFollowId
+// @access private
+export const unFollowingUser = async (req, res) => {
+  //get the current user
+  const currentUserId = req.user.userId
+  //get the user to unFollow
+  const { userToUnFollowId } = req.params
+  const userToUnFollow = await User.findById(userToUnFollowId)
+  //you cannot unFollow yourself
+  if (currentUserId.toString() === userToUnFollowId.toString()) {
+    throw new BadRequestError('You cannot follow and unFollow yourself')
+  }
+  //remove the id from the current userID
+  await User.findByIdAndUpdate(
+    currentUserId,
+    {
+      $pull: { following: userToUnFollowId },
+    },
+    { new: true }
+  )
+  //remove current user id to unFollow back
+  await User.findByIdAndUpdate(
+    userToUnFollowId,
+    {
+      $pull: { followers: currentUserId },
+    },
+    { new: true }
+  )
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: `You have unFollowed ${userToUnFollow.username}` })
+}
