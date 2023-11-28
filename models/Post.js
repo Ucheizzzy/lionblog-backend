@@ -8,7 +8,7 @@ const PostSchema = new mongoose.Schema(
       default: '',
     },
     claps: {
-      type: String,
+      type: Number,
       default: 0,
     },
     content: String,

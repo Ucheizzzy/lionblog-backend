@@ -62,3 +62,47 @@ export const deletePost = async (req, res) => {
   const post = await Post.findByIdAndDelete(req.params.id)
   res.status(StatusCodes.OK).json({ msg: 'Post deleted successfully ', post })
 }
+
+// @desc liking  post
+// @route patch /api/v1/posts/likes/:id
+// @access private
+export const likePost = async (req, res) => {
+  const { userId } = req.user
+  const post = await Post.findById(req.params.id)
+  if (!post) throw new BadRequestError('post not found!')
+  //push the user into the liked post field
+  await Post.findByIdAndUpdate(
+    req.params.id,
+    {
+      $addToSet: { likes: userId },
+    },
+    { new: true }
+  )
+  //remove the user from the dislikes array if present
+  post.disLikes = post.disLikes.filter(
+    (id) => id.toString() !== userId.toString()
+  )
+  await post.save()
+  res.status(StatusCodes.OK).json({ msg: 'Post liked successfully ', post })
+}
+
+// @desc dis liking  post
+// @route patch /api/v1/posts/dislike/:id
+// @access private
+export const disLikePost = async (req, res) => {
+  const { userId } = req.user
+  const post = await Post.findById(req.params.id)
+  if (!post) throw new BadRequestError('post not found!')
+  //push the user into the liked post field
+  await Post.findByIdAndUpdate(
+    req.params.id,
+    {
+      $addToSet: { disLikes: userId },
+    },
+    { new: true }
+  )
+  //remove the user from the dislikes array if present
+  post.likes = post.likes.filter((id) => id.toString() !== userId.toString())
+  await post.save()
+  res.status(StatusCodes.OK).json({ msg: 'Post disliked successfully ', post })
+}
