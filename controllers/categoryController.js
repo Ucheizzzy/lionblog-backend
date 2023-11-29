@@ -14,7 +14,10 @@ export const createCategory = async (req, res) => {
 // @route GET /api/v1/categories/
 // @access private
 export const getCategories = async (req, res) => {
-  const categories = await Category.find({})
+  const categories = await Category.find({}).populate({
+    path: 'posts',
+    model: 'Post',
+  })
   res.status(StatusCodes.OK).json({ msg: 'All categories fetched', categories })
 }
 export const updateCategory = async (req, res) => {

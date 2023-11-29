@@ -6,10 +6,31 @@ import { BadRequestError } from '../errors/customError.js'
 // @route GET /api/v1/users/profile
 // @access private
 export const getProfile = async (req, res) => {
-  const user = await User.findById(req.user.userId).select(
-    'username email role _id blockedUsers'
-  )
-
+  const user = await User.findById(req.user.userId)
+    .populate({
+      path: 'posts',
+      model: 'Post',
+    })
+    .populate({
+      path: 'following',
+      model: 'User',
+      select: 'username email role',
+    })
+    .populate({
+      path: 'followers',
+      model: 'User',
+      select: 'username email role',
+    })
+    .populate({
+      path: 'blockedUsers',
+      model: 'User',
+      select: 'username email role',
+    })
+    .populate({
+      path: 'profileViewers',
+      model: 'User',
+      select: 'username email role',
+    })
   res.status(StatusCodes.OK).json({ msg: 'I am the profile route', user })
 }
 
@@ -165,4 +186,3 @@ export const unFollowingUser = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ msg: `You have unFollowed ${userToUnFollow.username}` })
 }
-

@@ -55,6 +55,12 @@ export const getAllPost = async (req, res) => {
     ],
   }
   const post = await Post.find(query)
+    .populate({
+      path: 'author',
+      model: 'User',
+      select: 'username email role',
+    })
+    .populate({ path: 'category', model: 'Category', select: 'name' })
   res.status(StatusCodes.OK).json({ msg: 'All post ', post })
 }
 // @desc single post
