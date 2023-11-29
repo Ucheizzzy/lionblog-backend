@@ -5,6 +5,7 @@ import {
   deletePost,
   disLikePost,
   getAllPost,
+  getPublicPost,
   getSinglePost,
   likePost,
   schedule,
@@ -29,7 +30,9 @@ router
     validatePostInputs,
     createPost
   )
-  .get(getAllPost)
+  .get(authenticatedUser, getAllPost)
+  .get(getPublicPost)
+
 router
   .route('/:id')
   .get(globalValidateIdParams(Post), getSinglePost)

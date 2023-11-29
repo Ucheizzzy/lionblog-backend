@@ -34,7 +34,27 @@ export const createPost = async (req, res) => {
 // @route GET /api/v1/posts/
 // @access private
 export const getAllPost = async (req, res) => {
-  const post = await Post.find({}).populate('comments')
+  //get the current user
+  const currentUserId = req.user.userId
+  const usersBlockingCurrentUser = await User.find({
+    blockedUsers: currentUserId,
+  })
+  //map through them and retrieve the ids
+  const idsOfThoseBlockingCurrentUser = usersBlockingCurrentUser?.map(
+    (user) => user?._id
+  )
+  // console.log(idsOfThoseBlockingCurrentUser)
+  const currentTime = new Date()
+  const query = {
+    author: { $nin: idsOfThoseBlockingCurrentUser },
+    $or: [
+      {
+        schedulePublished: { $lte: currentTime },
+        schedulePublished: null,
+      },
+    ],
+  }
+  const post = await Post.find(query)
   res.status(StatusCodes.OK).json({ msg: 'All post ', post })
 }
 // @desc single post
@@ -44,6 +64,17 @@ export const getSinglePost = async (req, res) => {
   const post = await Post.findById(req.params.id)
   if (!post) throw new BadRequestError('post does not exist')
   res.status(StatusCodes.OK).json({ msg: 'All post ', post })
+}
+
+// @desc public post
+// @route GET /api/v1/posts
+// @access public
+export const getPublicPost = async (req, res) => {
+  const posts = await Post.find({})
+    .sort({ createdAt: -1 })
+    .limit(6)
+    .populate('category')
+  res.status(StatusCodes.OK).json({ msg: 'All public post', posts })
 }
 
 // @desc update post
