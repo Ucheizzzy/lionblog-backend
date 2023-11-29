@@ -74,7 +74,7 @@ export const globalValidateIdParams = (Model) => {
   return withValidationErrors([
     param('id').custom(async (value) => {
       const isValidMongoId = mongoose.Types.ObjectId.isValid(value)
-      if (!isValidMongoId) throw new BadRequestError('invalid mongo id')
+      if (!isValidMongoId) throw new BadRequestError('invalid id')
       const model = await Model.findById(value)
       if (!model) throw new NotFoundError(`None found with ${value}`)
     }),

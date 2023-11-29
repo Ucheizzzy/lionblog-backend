@@ -68,10 +68,9 @@ export const deletePost = async (req, res) => {
 // @access private
 export const likePost = async (req, res) => {
   const { userId } = req.user
-  const post = await Post.findById(req.params.id)
-  if (!post) throw new BadRequestError('post not found!')
+
   //push the user into the liked post field
-  await Post.findByIdAndUpdate(
+  const post = await Post.findByIdAndUpdate(
     req.params.id,
     {
       $addToSet: { likes: userId },
@@ -91,10 +90,9 @@ export const likePost = async (req, res) => {
 // @access private
 export const disLikePost = async (req, res) => {
   const { userId } = req.user
-  const post = await Post.findById(req.params.id)
-  if (!post) throw new BadRequestError('post not found!')
+
   //push the user into the liked post field
-  await Post.findByIdAndUpdate(
+  const post = await Post.findByIdAndUpdate(
     req.params.id,
     {
       $addToSet: { disLikes: userId },
@@ -105,4 +103,40 @@ export const disLikePost = async (req, res) => {
   post.likes = post.likes.filter((id) => id.toString() !== userId.toString())
   await post.save()
   res.status(StatusCodes.OK).json({ msg: 'Post disliked successfully ', post })
+}
+
+// @desc clapping for a post
+// @route patch /api/v1/posts/claps/:id
+// @access private
+
+export const claps = async (req, res) => {
+  const post = await Post.findByIdAndUpdate(
+    req.params.id,
+    {
+      $inc: { claps: 1 },
+    },
+    { new: true }
+  )
+  res.status(StatusCodes.OK).json({ msg: 'You clapped for this post', post })
+}
+// @desc scheduling a post
+// @route patch /api/v1/posts/schedule/:id
+// @access private
+export const schedule = async (req, res) => {
+  const { scheduleDate } = req.body
+  if (!scheduleDate) throw new BadRequestError('Date is required')
+  //check if the user is the owner of the post
+  const post = await Post.findById(req.params.id)
+  if (post.author.toString() !== req.user.userId.toString()) {
+    throw new BadRequestError(`You cannot schedule someone else's post`)
+  }
+  //check if the scheduled date is in the past
+  const currentDate = new Date()
+  const plannedDate = new Date(scheduleDate)
+  if (plannedDate < currentDate) {
+    throw new BadRequestError('The scheduled date cannot be in the past.')
+  }
+  post.schedulePublished = scheduleDate
+  await post.save()
+  res.status(StatusCodes.OK).json({ msg: 'Post scheduled', post })
 }

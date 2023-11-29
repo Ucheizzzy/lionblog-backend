@@ -1,11 +1,13 @@
 import { Router } from 'express'
 import {
+  claps,
   createPost,
   deletePost,
   disLikePost,
   getAllPost,
   getSinglePost,
   likePost,
+  schedule,
   updatePost,
 } from '../controllers/postController.js'
 import {
@@ -41,4 +43,10 @@ router
 router
   .route('/dislike/:id')
   .patch(authenticatedUser, globalValidateIdParams(Post), disLikePost)
+router
+  .route('/claps/:id')
+  .patch(authenticatedUser, globalValidateIdParams(Post), claps)
+router
+  .route('/schedule/:id')
+  .patch(authenticatedUser, globalValidateIdParams(Post), schedule)
 export default router
