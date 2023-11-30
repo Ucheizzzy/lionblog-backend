@@ -56,14 +56,51 @@ export const getAllPost = async (req, res) => {
       },
     ],
   }
-  const post = await Post.find(query)
+  const { search, category, sort } = req.query
+  //search both title and content
+  if (search) {
+    query.$or = [
+      { title: { $regex: search, $options: 'i' } },
+      { content: { $regex: search, $options: 'i' } },
+    ]
+  }
+  if (category !== 'all') {
+    query.category = category
+  }
+  const sortOptions = {
+    newest: '-createdAt',
+    oldest: 'createdAt',
+    'a-z': 'title',
+    'z-a': 'title',
+  }
+  const sortKey = sortOptions[sort] || sortOptions.newest
+
+  //setting up pagination
+  const page = Number(req.query.page) || 1
+  const limit = Number(req.query.limit) || 10
+  const skip = (page - 1) * limit
+  const posts = await Post.find(query)
     .populate({
       path: 'author',
       model: 'User',
       select: 'username email role',
     })
     .populate({ path: 'category', model: 'Category', select: 'name' })
-  res.status(StatusCodes.OK).json({ msg: 'All post ', post })
+    .sort(sortKey)
+    .skip(skip)
+    .limit(limit)
+
+  const totalPosts = await Post.countDocuments(query)
+  const numOfPages = Math.ceil(totalPosts / limit)
+  res
+    .status(StatusCodes.OK)
+    .json({
+      msg: 'All post ',
+      totalPosts,
+      numOfPages,
+      currentPage: page,
+      posts,
+    })
 }
 // @desc single post
 // @route GET /api/v1/posts/:id
