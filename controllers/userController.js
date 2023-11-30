@@ -186,3 +186,35 @@ export const unFollowingUser = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ msg: `You have unFollowed ${userToUnFollow.username}` })
 }
+// @desc upload profile picture
+// @route patch /api/v1/users/profile-picture
+// @access private
+
+export const uploadProfilePicture = async (req, res) => {
+  const user = await User.findByIdAndUpdate(
+    req.user.userId,
+    {
+      $set: { profilePicture: req.file.path },
+    },
+    { new: true }
+  )
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: `Profile image updated successfully`, user })
+}
+// @desc upload coverImage
+// @route patch /api/v1/users/profile-picture
+// @access private
+
+export const uploadCoverImage = async (req, res) => {
+  const user = await User.findByIdAndUpdate(
+    req.user.userId,
+    {
+      $set: { coverImage: req.file.path },
+    },
+    { new: true }
+  )
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: `Cover image updated successfully`, user })
+}

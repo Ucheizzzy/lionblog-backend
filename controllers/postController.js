@@ -8,7 +8,9 @@ import { BadRequestError } from '../errors/customError.js'
 // @route POST /api/v1/posts/
 // @access private
 export const createPost = async (req, res) => {
+  // console.log(req.file.path)
   req.body.author = req.user.userId
+  req.body.image = req.file.path
   const post = await Post.create(req.body)
   // push the post to the post array in the user model
   await User.findByIdAndUpdate(

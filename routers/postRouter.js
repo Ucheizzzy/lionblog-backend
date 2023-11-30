@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import multer from 'multer'
 import {
   claps,
   createPost,
@@ -19,15 +20,17 @@ import {
   globalValidateIdParams,
   validatePostInputs,
 } from '../middleware/validationMiddleware.js'
+import { storage } from '../utils/fileUpload.js'
 import Post from '../models/Post.js'
 const router = Router()
 
+const upload = multer({ storage })
 router
   .route('/')
   .post(
     authenticatedUser,
     checkAccountVerification,
-    validatePostInputs,
+    upload.single('image'),
     createPost
   )
   .get(authenticatedUser, getAllPost)

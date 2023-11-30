@@ -5,7 +5,7 @@ const PostSchema = new mongoose.Schema(
     title: String,
     image: {
       type: String,
-      default: '',
+      required: true,
     },
     claps: {
       type: Number,
