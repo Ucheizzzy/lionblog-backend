@@ -34,12 +34,18 @@ router
     createPost
   )
   .get(authenticatedUser, getAllPost)
-  .get(getPublicPost)
+
+router.get('/public', getPublicPost)
 
 router
   .route('/:id')
   .get(globalValidateIdParams(Post), getSinglePost)
-  .patch(authenticatedUser, globalValidateIdParams(Post), updatePost)
+  .patch(
+    authenticatedUser,
+    globalValidateIdParams(Post),
+    upload.single('image'),
+    updatePost
+  )
   .delete(authenticatedUser, globalValidateIdParams(Post), deletePost)
 
 router

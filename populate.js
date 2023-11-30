@@ -3,20 +3,20 @@ import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 dotenv.config()
 
-import Job from './models/JobModel.js'
-import User from './models/UserModel.js'
+import Post from './models/Post.js'
+import User from './models/User.js'
 
 try {
   await mongoose.connect(process.env.MONGO_URL)
-  const user = await User.findOne({ email: 'john@gmail.com' })
-  const jsonJobs = JSON.parse(
+  const user = await User.findOne({ username: 'lion' })
+  const jsonPosts = JSON.parse(
     await readFile(new URL('./utils/mockData.json', import.meta.url))
   )
-  const jobs = jsonJobs.map((job) => {
-    return { ...job, createdBy: user._id }
+  const posts = jsonPosts.map((post) => {
+    return { ...post, author: user._id, category: '655b7b00c6cd0700e9c69d01' }
   })
-  await Job.deleteMany({ createdBy: user._id })
-  await Job.create(jobs)
+  await Post.deleteMany({ author: user._id })
+  await Post.create(posts)
   console.log('Success!!!')
   process.exit(0)
 } catch (error) {

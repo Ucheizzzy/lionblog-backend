@@ -47,7 +47,7 @@ export const getAllPost = async (req, res) => {
   )
   // console.log(idsOfThoseBlockingCurrentUser)
   const currentTime = new Date()
-  const query = {
+  let query = {
     author: { $nin: idsOfThoseBlockingCurrentUser },
     $or: [
       {
@@ -56,7 +56,8 @@ export const getAllPost = async (req, res) => {
       },
     ],
   }
-  const { search, category, sort } = req.query
+
+  const { search, sort } = req.query
   //search both title and content
   if (search) {
     query.$or = [
@@ -64,9 +65,9 @@ export const getAllPost = async (req, res) => {
       { content: { $regex: search, $options: 'i' } },
     ]
   }
-  if (category !== 'all') {
-    query.category = category
-  }
+  // if (category !== 'all') {
+  //   query.category = category
+  // }
   const sortOptions = {
     newest: '-createdAt',
     oldest: 'createdAt',
@@ -77,7 +78,7 @@ export const getAllPost = async (req, res) => {
 
   //setting up pagination
   const page = Number(req.query.page) || 1
-  const limit = Number(req.query.limit) || 10
+  const limit = Number(req.query.limit) || 2
   const skip = (page - 1) * limit
   const posts = await Post.find(query)
     .populate({
@@ -92,21 +93,38 @@ export const getAllPost = async (req, res) => {
 
   const totalPosts = await Post.countDocuments(query)
   const numOfPages = Math.ceil(totalPosts / limit)
-  res
-    .status(StatusCodes.OK)
-    .json({
-      msg: 'All post ',
-      totalPosts,
-      numOfPages,
-      currentPage: page,
-      posts,
-    })
+  res.status(StatusCodes.OK).json({
+    msg: 'All post ',
+    totalPosts,
+    numOfPages,
+    currentPage: page,
+    posts,
+  })
 }
 // @desc single post
 // @route GET /api/v1/posts/:id
 // @access public
 export const getSinglePost = async (req, res) => {
   const post = await Post.findById(req.params.id)
+    .populate({
+      path: 'author',
+      model: 'User',
+      select: 'username email role',
+    })
+    .populate({
+      path: 'category',
+      model: 'Category',
+      select: 'name',
+    })
+    .populate({
+      path: 'comments',
+      model: 'Comment',
+      populate: {
+        path: 'author',
+        select: 'username',
+      },
+    })
+
   if (!post) throw new BadRequestError('post does not exist')
   res.status(StatusCodes.OK).json({ msg: 'All post ', post })
 }
@@ -126,17 +144,37 @@ export const getPublicPost = async (req, res) => {
 // @route PATCH /api/v1/posts/:id
 // @access private
 export const updatePost = async (req, res) => {
-  const post = await Post.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-  })
+  const postFound = await Post.findById(req.params.id)
+  const { title, category, content } = req.body
+
+  const post = await Post.findByIdAndUpdate(
+    req.params.id,
+    {
+      image: req?.file?.path ? req?.file?.path : postFound?.image,
+      title: title ? title : postFound?.title,
+      category: category ? category : postFound?.category,
+      content: content ? content : postFound?.content,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  )
   res.status(StatusCodes.OK).json({ msg: 'Post updated successfully ', post })
 }
 // @desc DELETE post
 // @route dELETE /api/v1/posts/:id
 // @access private
 export const deletePost = async (req, res) => {
+  const postFound = await Post.findById(req.params.id)
+  const isAuthor =
+    req.user.userId.toString() === postFound.author._id.toString()
+  // console.log(isAuthor)
+  if (!isAuthor) throw new BadRequestError('You can only delete your post')
   const post = await Post.findByIdAndDelete(req.params.id)
-  res.status(StatusCodes.OK).json({ msg: 'Post deleted successfully ', post })
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: 'Post deleted successfully ', postFound })
 }
 
 // @desc liking  post
